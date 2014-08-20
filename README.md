@@ -1,4 +1,4 @@
 ScrollSanp
 ==========
-
-====Scrollview advance to next section with snapping demo
+Scrollview advance to next section with snapping demo
+==
