@@ -28,6 +28,7 @@
     self.collectionView.dataSource = self;
     self.collectionView.backgroundColor = [UIColor whiteColor];
     self.collectionView.contentInset = UIEdgeInsetsMake(5, 0, 20, 0);
+
     [self.view addSubview:self.collectionView];
 }
 - (void)viewWillAppear:(BOOL)animated{
@@ -77,7 +78,6 @@
 #pragma mark- ScrollView
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
     CGFloat stretch = -130;
-    
     CGFloat statusHeight = [[UIApplication sharedApplication] statusBarFrame].size.height;
     CGFloat inset = self.navigationController.navigationBar.frame.size.height + statusHeight + 5;
     CGFloat height = scrollView.contentSize.height - CGRectGetHeight(self.view.bounds) + inset + 20;
@@ -90,14 +90,13 @@
     CGFloat percent = diff/stretch;
      NSLog(@"Percent:%f",percent);
     self.nextView.alpha = 1;
-
+    
     if (diff <= stretch && _loaded) {
-         NSLog(@"SNAP!");
         UIEdgeInsets insets = self.collectionView.contentInset;
         insets.bottom = 120 + 10;
         self.collectionView.contentInset = insets;
 
-        if (!_snapped) {
+        if (!_snapped && !scrollView.isDecelerating) {
             _snapped = YES;
             CGRect nextFrame = self.nextView.frame;
             nextFrame.origin.y -=20;
@@ -114,12 +113,21 @@
                              }];
         }
     }else{
+        CGRect nextViewFrame = self.nextView.frame;
+
         if (!_snapped && diff < 0) {
-            CGRect nextViewFrame = self.nextView.frame;
             nextViewFrame.size.height = abs(diff);
 //            CGFloat newY = nextViewFrame.origin.y + abs(percent);
 //            nextViewFrame.origin.y = newY;
             self.nextView.frame = nextViewFrame;
+            UIEdgeInsets afterInsets = self.collectionView.contentInset;
+            afterInsets.bottom += CGRectGetHeight(self.nextView.frame);
+        }else if (_snapped && percent < 0){
+            nextViewFrame.size.height = abs(stretch)  - diff - 10;
+            nextViewFrame.origin.y = self.collectionView.contentSize.height+30;
+            self.nextView.frame = nextViewFrame;
+            self.collectionView.contentInset = UIEdgeInsetsMake(70, 0, 20, 0);
+            _snapped = NO;
         }
         
     }
